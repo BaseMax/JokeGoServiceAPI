@@ -70,7 +70,8 @@ Response
 
 **Edit a Joke**
 
-```PUT /jokes/{joke_id}
+```
+PUT /jokes/{joke_id}
 ```
 
 This endpoint allows you to edit an existing joke.
