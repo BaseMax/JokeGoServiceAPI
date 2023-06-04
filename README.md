@@ -2,6 +2,44 @@
 
 Welcome to the Joke Service RESTful API! This API allows you to manage a collection of jokes, including adding new jokes, editing existing jokes, deleting jokes, rating jokes, and retrieving a list of all jokes with pagination and sorting options.
 
+## Routes
+
+- Get a Single Joke: GET /jokes/{joke_id}
+
+This endpoint allows you to retrieve a specific joke by its ID.
+
+- Search for Jokes: GET /jokes/search?query={search_query}
+
+This endpoint enables searching for jokes based on a search query. It returns a list of jokes that match the search query.
+
+- Get Random Joke: GET /jokes/random
+
+This endpoint retrieves a random joke from the collection.
+
+- Get Top Rated Jokes: GET /jokes/top-rated?limit={limit}
+
+This endpoint returns a list of the top-rated jokes, sorted by the highest rating. The limit parameter specifies the maximum number of jokes to retrieve.
+
+- Get Jokes by Author: GET /jokes/authors/{author_name}
+
+This endpoint retrieves a list of jokes by a specific author. It returns all jokes authored by the given author name.
+
+- Add a Comment to a Joke: POST /jokes/{joke_id}/comments
+
+This endpoint allows users to add a new comment to a specific joke.
+
+- Edit a Comment: PUT /jokes/{joke_id}/comments/{comment_id}
+
+This endpoint allows users to edit a comment on a specific joke.
+
+- Delete a Comment: DELETE /jokes/{joke_id}/comments/{comment_id}
+
+This endpoint allows users to delete a comment from a specific joke.
+
+- Get All Comments of a Joke: GET /jokes/{joke_id}/comments
+
+This endpoint retrieves all comments associated with a specific joke.
+
 ## API Endpoints
 
 ### Add a New Joke
