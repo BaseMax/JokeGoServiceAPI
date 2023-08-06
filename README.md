@@ -179,4 +179,100 @@ The API supports pagination to retrieve jokes in chunks. You can control the num
 
 The API provides sorting options to order the list of jokes. Use the sort parameter with the values "latest" to sort by the newest first or "rating" to sort by the highest rating first.
 
+# Add a new comment
+
+```
+POST /jokes/{joke_id}/comments
+```
+
+This endpoint allows users to add a new comment to a specific joke.
+
+**request**
+
+```json
+{
+  "content": "Comment content"
+}
+```
+
+**response**
+
+```json
+{
+  "id": "unique_comment_id",
+  "content": "Comment content",
+  "author": "Author name"
+}
+```
+
+# Edit a Comment
+
+```
+PUT /jokes/{joke_id}/comments/{comment_id}
+```
+
+This endpoint allows users to edit a comment on a specific joke.
+
+**request**
+
+```json
+{
+  "content": "Updated comment content",
+  "author": "Updated author name"
+}
+```
+
+**response**
+
+```json
+{
+  "id": "unique_comment_id",
+  "content": "Updated comment content",
+  "author": "Updated author name"
+}
+```
+
+# Delete a Comment
+
+```
+DELETE /jokes/{joke_id}/comments/{comment_id}
+```
+
+This endpoint allows users to delete a comment from a specific joke.
+
+**response**
+
+```json
+204 No Content
+```
+
+# Get All Comments of a Joke
+
+```
+GET /jokes/{joke_id}/comments
+```
+
+This endpoint retrieves all comments associated with a specific joke.
+
+**request**
+
+```json
+```
+
+**response**
+
+```json
+{
+  "total": 20,
+  "comments": [
+    {
+      "id": "unique_comment_id",
+      "content": "Comment Content",
+      "author": "Author Name"
+    },
+    // More comments...
+  ]
+}
+```
+
 Copyright 2023, Max Base
