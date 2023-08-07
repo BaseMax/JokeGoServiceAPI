@@ -1,26 +1,25 @@
 package main
 
 import (
-	"database/sql"
-	"fmt"
 	"log"
-	"net/http"
+	"os"
 
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/BaseMax/JokeGoServiceAPI/db"
+	"github.com/BaseMax/JokeGoServiceAPI/routes"
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	// Test code for checking docker-compose
-	db, err := sql.Open("mysql", "user:pass@tcp(db:3306)/test")
-	if err != nil {
+	godotenv.Load(".env")
+
+	if err := db.Init(); err != nil {
 		log.Fatal(err)
 	}
+	r := routes.Init()
 
-	err = db.Ping()
-	if err != nil {
-		log.Fatal(err)
+	addr := os.Getenv("RUNNING_ADDR")
+	if addr == "" {
+		addr = ":8000"
 	}
-
-	fmt.Println("== Start Server ==")
-	http.ListenAndServe(":8000", nil)
+	r.Logger.Fatal(r.Start(addr))
 }
