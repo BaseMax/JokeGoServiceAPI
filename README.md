@@ -4,6 +4,18 @@ Welcome to the Joke Service RESTful API! This API allows you to manage a collect
 
 ## Routes
 
+- Register user: `POST /register`
+
+This endpoint register user and retrieve JWT token.
+
+- Login user: `POST /login`
+
+This endpoint login user and retrieve JWT token.
+
+- Refresh token: `POST /refresh`
+
+This endpoint refresh user JWT token and retrieve new token.
+
 - Get a Single Joke: `GET /jokes/{joke_id}`
 
 This endpoint allows you to retrieve a specific joke by its ID.
@@ -45,6 +57,69 @@ This endpoint retrieves all comments associated with a specific joke.
 ### Add a New Joke
 
 ```
+POST /register
+```
+
+This endpoint register user and retrieve JWT token.
+
+**Request**
+```json
+{
+  "username": "username",
+  "password": "password"
+}
+```
+
+**Response**
+```json
+{
+  "bearer": "JWT token"
+}
+```
+
+```
+POST /login
+```
+
+This endpoint login user and retrieve JWT token.
+
+**Request**
+```json
+{
+  "username": "username",
+  "password": "password"
+}
+```
+
+**Response**
+```json
+{
+  "bearer": "JWT token"
+}
+```
+
+```
+POST /refresh
+```
+
+This endpoint refresh user JWT token and retrieve new token.
+
+**Request**
+```json
+{
+  "username": "username",
+  "password": "password"
+}
+```
+
+**Response**
+```json
+{
+  "bearer": "JWT token"
+}
+```
+
+```
 POST /jokes
 ```
 
@@ -58,7 +133,7 @@ This endpoint allows you to add a new joke to the collection.
 }
 ```
 
-Response
+**Response**
 ```json
 {
   "id": "unique_joke_id",
