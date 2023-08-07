@@ -10,7 +10,7 @@ func TestFetchCommentById(t *testing.T) {
 
 }
 
-func TestFetchjAllComments(t *testing.T) {
+func TestFetchAllComments(t *testing.T) {
 
 }
 

@@ -37,10 +37,10 @@ func Init() *echo.Echo {
 	g.POST("jokes/:joke_id/rating", controllers.RateJoke)
 
 	g.POST("jokes/:joke_id/comments", controllers.CreateJokeComment)
-	g.GET("jokes/:joke_id/comments/:comment_id", controllers.GetJokeComment)
+	g.GET("jokes/comments/:comment_id", controllers.GetJokeComment)
 	g.GET("jokes/:joke_id/comments", controllers.GetJokeComments)
-	g.PUT("jokes/:joke_id/comments/:comment_id", controllers.EditJokeComment)
-	g.DELETE("jokes/:joke_id/comments/:comment_id", controllers.DeleteJokeComment)
+	g.PUT("jokes/comments/:comment_id", controllers.EditJokeComment)
+	g.DELETE("jokes/comments/:comment_id", controllers.DeleteJokeComment)
 
 	return e
 }
