@@ -13,3 +13,23 @@ type Comment struct {
 	AuthorID uint
 	Author   User
 }
+
+func CreateComment(c *Comment) error {
+	return nil
+}
+
+func FetchCommentById(id uint) (*Comment, error) {
+	return nil, nil
+}
+
+func FetchjAllComments(limit uint, page uint) (*[]Comment, error) {
+	return nil, nil
+}
+
+func UpdateComment(id uint, c *Comment) (*Comment, error) {
+	return nil, nil
+}
+
+func DeleteComment(id uint) error {
+	return nil
+}
