@@ -26,4 +26,4 @@ run-db:
 	docker-compose up db -d
 
 run-local:
-	export DB_HOST=localhost; go run .
+	export DB_HOSTNAME=localhost; go run .
