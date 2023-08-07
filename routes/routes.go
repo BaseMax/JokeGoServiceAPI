@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/BaseMax/JokeGoServiceAPI/controllers"
@@ -20,9 +21,10 @@ func Init() *echo.Echo {
 	}
 	g := e.Group("/", echojwt.WithConfig(jwtConf))
 
+	fmt.Println(string(jwtKey))
 	e.POST("/register", controllers.Register)
 	e.POST("/login", controllers.Login)
-	e.POST("/refresh", controllers.Refresh)
+	g.POST("refresh", controllers.Refresh)
 
 	g.POST("jokes", controllers.CreateJoke)
 	g.GET("jokes/:joke_id", controllers.GetJoke)
@@ -32,7 +34,7 @@ func Init() *echo.Echo {
 	g.GET("jokes/authors/:author_name", controllers.GetJokeByAuthor)
 	g.PUT("jokes/:joke_id", controllers.EditJoke)
 	g.DELETE("jokes/:joke_id", controllers.DeleteJoke)
-	g.POST("/jokes/:joke_id/rating", controllers.RateJoke)
+	g.POST("jokes/:joke_id/rating", controllers.RateJoke)
 
 	g.POST("jokes/:joke_id/comments", controllers.CreateJokeComment)
 	g.GET("jokes/:joke_id/comments/:comment_id", controllers.GetJokeComment)

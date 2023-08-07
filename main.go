@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/BaseMax/JokeGoServiceAPI/db"
+	"github.com/BaseMax/JokeGoServiceAPI/migration"
 	"github.com/BaseMax/JokeGoServiceAPI/routes"
 	"github.com/joho/godotenv"
 )
@@ -13,6 +14,9 @@ func main() {
 	godotenv.Load(".env")
 
 	if err := db.Init(); err != nil {
+		log.Fatal(err)
+	}
+	if err := migration.Init(); err != nil {
 		log.Fatal(err)
 	}
 	r := routes.Init()
