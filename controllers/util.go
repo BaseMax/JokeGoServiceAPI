@@ -5,12 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
+	"gorm.io/gorm"
 )
 
 var jwtKey []byte
@@ -42,7 +44,35 @@ func createToken(id any, name string) (string, error) {
 	return bearer, nil
 }
 
-func isDuplicatedKeyError(err error) bool {
+func dbErrorToHttp(err error) *echo.HTTPError {
 	var me *mysql.MySQLError
-	return errors.As(err, &me) && me.Number == 1062
+	switch {
+	case err == nil:
+		return nil
+	case errors.As(err, &me) && me.Number == 1062:
+		return echo.ErrConflict
+	case err == gorm.ErrRecordNotFound:
+		return echo.ErrNotFound
+	}
+	return echo.ErrInternalServerError
+}
+
+func getClaims(c echo.Context) (*jwt.RegisteredClaims, error) {
+	token, ok := c.Get("user").(*jwt.Token)
+	if !ok {
+		return nil, echo.ErrBadRequest
+	}
+	claims, ok := token.Claims.(*jwt.RegisteredClaims)
+	if !ok {
+		return nil, echo.ErrBadRequest
+	}
+	return claims, nil
+}
+
+func strToUint(param string) (uint, error) {
+	id, err := strconv.Atoi(param)
+	if err != nil {
+		return 0, err
+	}
+	return uint(id), nil
 }

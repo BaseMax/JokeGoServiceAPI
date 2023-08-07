@@ -22,7 +22,7 @@ func TestFetchTopRatedJokes(t *testing.T) {
 
 }
 
-func TestGetJokeByAuthor(t *testing.T) {
+func TestFetchJokesByAuthor(t *testing.T) {
 
 }
 

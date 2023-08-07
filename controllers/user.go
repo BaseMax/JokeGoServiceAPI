@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/BaseMax/JokeGoServiceAPI/models"
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 )
 
@@ -15,8 +14,8 @@ func Register(c echo.Context) error {
 	}
 
 	err := models.RegisterUser(&u)
-	if isDuplicatedKeyError(err) {
-		return echo.ErrConflict
+	if err := dbErrorToHttp(err); err != nil {
+		return err
 	}
 	if err != nil {
 		return echo.ErrInternalServerError
@@ -50,13 +49,9 @@ func Login(c echo.Context) error {
 }
 
 func Refresh(c echo.Context) error {
-	token, ok := c.Get("user").(*jwt.Token)
-	if !ok {
+	claims, err := getClaims(c)
+	if err != nil {
 		return echo.ErrBadRequest
-	}
-	claims, ok := token.Claims.(*jwt.RegisteredClaims)
-	if !ok {
-		return echo.ErrInternalServerError
 	}
 
 	bearer, err := createToken(claims.ID, claims.Issuer)
