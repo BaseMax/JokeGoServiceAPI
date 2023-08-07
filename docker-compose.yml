@@ -1,0 +1,28 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - ${RUNNING_PORT}:${RUNNING_PORT}
+    depends_on:
+      wait-for-db:
+        condition: service_completed_successfully
+    links:
+      - db
+
+  wait-for-db:
+    image: atkrad/wait4x
+    depends_on:
+      - db
+    command: tcp db:3306 -t 30s -i 250ms
+
+  db:
+    image: mariadb:10.10
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
