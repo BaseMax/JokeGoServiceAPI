@@ -17,7 +17,7 @@ func Init() error {
 		os.Getenv("MYSQL_USER"), os.Getenv("MYSQL_PASSWORD"),
 		os.Getenv("DB_HOSTNAME"), os.Getenv("MYSQL_DATABASE"),
 	)
-	db, err := gorm.Open(mysql.Open(dsn))
+	db, err = gorm.Open(mysql.Open(dsn))
 	if err != nil {
 		return err
 	}

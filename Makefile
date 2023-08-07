@@ -27,3 +27,6 @@ run-db:
 
 run-local:
 	export DB_HOSTNAME=localhost; go run .
+
+test-local:
+	export DB_HOSTNAME=localhost; go test -v ./...
