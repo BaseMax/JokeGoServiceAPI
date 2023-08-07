@@ -54,9 +54,7 @@ This endpoint retrieves all comments associated with a specific joke.
 
 ## API Endpoints
 
-### User operations
-
-**Login user**
+### Register user
 ```
 POST /register
 ```
@@ -78,7 +76,7 @@ This endpoint register user and retrieve JWT token.
 }
 ```
 
-**Login user**
+### Login user
 ```
 POST /login
 ```
@@ -100,7 +98,7 @@ This endpoint login user and retrieve JWT token.
 }
 ```
 
-**Refresh token**
+### Refresh token
 ```
 POST /refresh
 ```
@@ -122,7 +120,6 @@ This endpoint refresh user JWT token and retrieve new token.
 }
 ```
 ### Add a New Joke
-
 ```
 POST /jokes
 ```
@@ -147,8 +144,7 @@ This endpoint allows you to add a new joke to the collection.
 }
 ```
 
-**Edit a Joke**
-
+### Edit a Joke
 ```
 PUT /jokes/{joke_id}
 ```
@@ -175,8 +171,7 @@ This endpoint allows you to edit an existing joke.
 }
 ```
 
-**Delete a Joke**
-
+### Delete a Joke
 ```
 DELETE /jokes/{joke_id}
 ```
@@ -190,7 +185,6 @@ This endpoint allows you to delete a joke from the collection.
 ```
 
 ### Rate a Joke
-
 ```
 POST /jokes/{joke_id}/rating
 ```
@@ -216,9 +210,7 @@ This endpoint allows you to rate a joke on a scale of 1 to 5.
 }
 ```
 
-## Get  Jokes
-
-**Get a Single Joke**
+### Get a Single Joke
 ```
 GET /jokes/{joke_id}
 ```
@@ -235,7 +227,7 @@ This endpoint allows you to retrieve a specific joke by its ID.
 }
 ```
 
-**Get a List of Jokes**
+### Get a List of Jokes
 ```
 GET /jokes?limit={limit}&page={page}&sort={sort_order}
 ```
@@ -276,7 +268,7 @@ The API supports pagination to retrieve jokes in chunks. You can control the num
 
 The API provides sorting options to order the list of jokes. Use the sort parameter with the values "latest" to sort by the newest first or "rating" to sort by the highest rating first.
 
-**Get Random Joke**
+### Get Random Joke
 ```
 GET /jokes/random
 ```
@@ -293,7 +285,7 @@ This endpoint retrieves a random joke from the collection.
 }
 ```
 
-**Get Top Rated Jokes**
+### Get Top Rated Jokes
 ```
 GET /jokes/top-rated?limit={limit}
 ```
@@ -316,7 +308,7 @@ This endpoint returns a list of the top-rated jokes, sorted by the highest ratin
 }
 ```
 
-**Get Jokes by Author**
+### Get Jokes by Author
 ```
 GET /jokes/authors/{author_name}?limit={limit}&page={page}&sort={sort_order}
 ```
@@ -341,8 +333,7 @@ This endpoint retrieves a list of jokes by a specific author. It returns all jok
   ]
 }
 ```
-# Add a new comment
-
+### Add a new comment
 ```
 POST /jokes/{joke_id}/comments
 ```
@@ -367,8 +358,7 @@ This endpoint allows users to add a new comment to a specific joke.
 }
 ```
 
-**Edit a Comment**
-
+### Edit a Comment
 ```
 PUT /jokes/{joke_id}/comments/{comment_id}
 ```
@@ -394,8 +384,7 @@ This endpoint allows users to edit a comment on a specific joke.
 }
 ```
 
-**Delete a Comment**
-
+### Delete a Comment
 ```
 DELETE /jokes/{joke_id}/comments/{comment_id}
 ```
@@ -408,18 +397,12 @@ This endpoint allows users to delete a comment from a specific joke.
 204 No Content
 ```
 
-**Get All Comments of a Joke**
-
+### Get All Comments of a Joke
 ```
 GET /jokes/{joke_id}/comments
 ```
 
 This endpoint retrieves all comments associated with a specific joke.
-
-**request**
-
-```json
-```
 
 **response**
 
