@@ -57,18 +57,6 @@ func dbErrorToHttp(err error) *echo.HTTPError {
 	return echo.ErrInternalServerError
 }
 
-func getClaims(c echo.Context) (*jwt.RegisteredClaims, error) {
-	token, ok := c.Get("user").(*jwt.Token)
-	if !ok {
-		return nil, echo.ErrBadRequest
-	}
-	claims, ok := token.Claims.(*jwt.RegisteredClaims)
-	if !ok {
-		return nil, echo.ErrBadRequest
-	}
-	return claims, nil
-}
-
 func strToUint(param string) (uint, error) {
 	id, err := strconv.Atoi(param)
 	if err != nil {

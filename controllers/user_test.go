@@ -16,48 +16,92 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var token string
+const (
+	FAKE_USER = "user"
+	FAKE_PASS = "pass"
+)
+
+var (
+	token string
+)
 
 func TestMain(m *testing.M) {
 	godotenv.Load("../.env")
 	db.Init()
 	migration.Init()
 
+	models.RegisterUser(&models.User{Username: FAKE_USER, Password: FAKE_PASS})
+
 	code := m.Run()
 
 	models.DeleteUserByName("user")
+
 	os.Exit(code)
 }
 
-func SendUserPass(t *testing.T, path string, handler func(c echo.Context) error) {
-	e := echo.New()
-
+func TestRegister(t *testing.T) {
 	data, _ := json.Marshal(map[string]any{
-		"username": "user",
+		"username": "newuser",
 		"password": "pass",
 	})
-	req, _ := http.NewRequest(http.MethodPost, path, bytes.NewBuffer(data))
+
+	e := echo.New()
+	req, _ := http.NewRequest(http.MethodPost, "/register", bytes.NewBuffer(data))
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 
-	if assert.NoError(t, handler(c)) {
+	if assert.NoError(t, Register(c)) {
 		assert.Equal(t, http.StatusOK, rec.Code)
+
 		var resData map[string]string
 		json.NewDecoder(rec.Body).Decode(&resData)
-		tkn, ok := resData["bearer"]
-		token = tkn
-		assert.True(t, ok)
+		token = resData["bearer"]
+		assert.NotEmpty(t, token)
 	}
-}
 
-func TestRegister(t *testing.T) {
-	SendUserPass(t, "/register", Register)
+	req, _ = http.NewRequest(http.MethodPost, "/register", bytes.NewBuffer(data))
+	rec = httptest.NewRecorder()
+	c = e.NewContext(req, rec)
+
+	if err := Register(c); assert.Error(t, err) {
+		assert.Equal(t, echo.ErrConflict, err)
+	}
+
+	models.DeleteUserByName("newuser")
 }
 
 func TestLogin(t *testing.T) {
-	SendUserPass(t, "/login", Login)
+	data, _ := json.Marshal(map[string]any{
+		"username": FAKE_USER,
+		"password": FAKE_PASS,
+	})
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodPost, "/login", bytes.NewBuffer(data))
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	if assert.NoError(t, Login(c)) {
+		assert.Equal(t, http.StatusOK, rec.Code)
+
+		var resData map[string]string
+		json.NewDecoder(rec.Body).Decode(&resData)
+		assert.NotEmpty(t, resData["bearer"])
+	}
 }
 
 func TestRefresh(t *testing.T) {
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodPost, "/refresh", nil)
+	rec := httptest.NewRecorder()
+	req.Header.Set("Authorization", "Bearer "+token)
+	c := e.NewContext(req, rec)
 
+	if assert.NoError(t, Refresh(c)) {
+		assert.Equal(t, rec.Code, http.StatusOK)
+		var resData map[string]string
+		json.NewDecoder(rec.Body).Decode(&resData)
+		_, ok := resData["bearer"]
+		assert.True(t, ok)
+	}
 }
