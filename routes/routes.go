@@ -1,11 +1,9 @@
 package routes
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/BaseMax/JokeGoServiceAPI/controllers"
-	"github.com/golang-jwt/jwt/v5"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 )
@@ -13,17 +11,11 @@ import (
 func Init() *echo.Echo {
 	e := echo.New()
 	jwtKey := []byte(os.Getenv("JWT_KET"))
-	jwtConf := echojwt.Config{
-		NewClaimsFunc: func(c echo.Context) jwt.Claims {
-			return new(jwt.RegisteredClaims)
-		},
-		SigningKey: jwtKey,
-	}
-	g := e.Group("/", echojwt.WithConfig(jwtConf))
 
-	fmt.Println(string(jwtKey))
 	e.POST("/register", controllers.Register)
 	e.POST("/login", controllers.Login)
+
+	g := e.Group("/", echojwt.WithConfig(echojwt.Config{SigningKey: jwtKey}))
 	g.POST("refresh", controllers.Refresh)
 
 	g.POST("jokes", controllers.CreateJoke)

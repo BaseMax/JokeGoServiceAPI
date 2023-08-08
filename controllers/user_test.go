@@ -16,7 +16,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var token string
+var (
+	token   string
+	data, _ = json.Marshal(map[string]any{
+		"username": "user",
+		"password": "pass",
+	})
+	e = echo.New()
+)
 
 func TestMain(m *testing.M) {
 	godotenv.Load("../.env")
@@ -29,35 +36,56 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func SendUserPass(t *testing.T, path string, handler func(c echo.Context) error) {
-	e := echo.New()
+func TestRegister(t *testing.T) {
 
-	data, _ := json.Marshal(map[string]any{
-		"username": "user",
-		"password": "pass",
-	})
-	req, _ := http.NewRequest(http.MethodPost, path, bytes.NewBuffer(data))
+	req, _ := http.NewRequest(http.MethodPost, "/register", bytes.NewBuffer(data))
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 
-	if assert.NoError(t, handler(c)) {
+	if assert.NoError(t, Register(c)) {
 		assert.Equal(t, http.StatusOK, rec.Code)
+
 		var resData map[string]string
 		json.NewDecoder(rec.Body).Decode(&resData)
-		tkn, ok := resData["bearer"]
-		token = tkn
-		assert.True(t, ok)
+		token = resData["bearer"]
+		assert.NotEmpty(t, token)
+	}
+
+	req, _ = http.NewRequest(http.MethodPost, "/register", bytes.NewBuffer(data))
+	rec = httptest.NewRecorder()
+	c = e.NewContext(req, rec)
+
+	if err := Register(c); assert.Error(t, err) {
+		assert.Equal(t, echo.ErrConflict, err)
 	}
 }
 
-func TestRegister(t *testing.T) {
-	SendUserPass(t, "/register", Register)
-}
-
 func TestLogin(t *testing.T) {
-	SendUserPass(t, "/login", Login)
+	req, _ := http.NewRequest(http.MethodPost, "/login", bytes.NewBuffer(data))
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	if assert.NoError(t, Login(c)) {
+		assert.Equal(t, http.StatusOK, rec.Code)
+
+		var resData map[string]string
+		json.NewDecoder(rec.Body).Decode(&resData)
+		assert.NotEmpty(t, resData["bearer"])
+	}
 }
 
 func TestRefresh(t *testing.T) {
+	e := echo.New()
+	req, _ := http.NewRequest(http.MethodPost, "/refresh", nil)
+	rec := httptest.NewRecorder()
+	req.Header.Set("Authorization", "Bearer "+token)
+	c := e.NewContext(req, rec)
 
+	if assert.NoError(t, Refresh(c)) {
+		assert.Equal(t, rec.Code, http.StatusOK)
+		var resData map[string]string
+		json.NewDecoder(rec.Body).Decode(&resData)
+		_, ok := resData["bearer"]
+		assert.True(t, ok)
+	}
 }

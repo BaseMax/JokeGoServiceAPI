@@ -1,6 +1,8 @@
 package controllers
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestGetJoke(t *testing.T) {
 
