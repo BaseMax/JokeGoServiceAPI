@@ -89,9 +89,7 @@ func GetJokeByAuthor(c echo.Context) error {
 	if err != nil {
 		return echo.ErrNotFound
 	}
-	return c.JSON(http.StatusOK, map[string]any{
-		"jokes": jokes,
-	})
+	return c.JSON(http.StatusOK, jokes)
 }
 
 func EditJoke(c echo.Context) error {
@@ -125,7 +123,7 @@ func DeleteJoke(c echo.Context) error {
 }
 
 func RateJoke(c echo.Context) error {
-	var joke models.JokeRequest
+	var joke *models.JokeRequest
 	id, err := strToUint(c.Param("joke_id"))
 	if err != nil {
 		return echo.ErrBadRequest
@@ -134,11 +132,9 @@ func RateJoke(c echo.Context) error {
 		return echo.ErrBadRequest
 	}
 
-	jokesResult, err := models.RateJoke(id, joke.Rating)
+	joke, err = models.RateJoke(id, joke.Rating)
 	if err := dbErrorToHttp(err); err != nil {
 		return err
 	}
-	return c.JSON(http.StatusOK, map[string]any{
-		"jokes": jokesResult,
-	})
+	return c.JSON(http.StatusOK, joke)
 }

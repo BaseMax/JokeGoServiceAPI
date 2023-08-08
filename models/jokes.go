@@ -124,9 +124,12 @@ func UpdateJoke(id uint, j *JokeRequest) error {
 		return gorm.ErrRecordNotFound
 	}
 
-	err := db.Where(id).Updates(Joke{AuthorID: user.ID, Content: j.Content, Rating: j.Rating}).Error
-	if err != nil {
-		return err
+	r = db.Where(id).Updates(Joke{AuthorID: user.ID, Content: j.Content, Rating: j.Rating})
+	if r.Error != nil {
+		return r.Error
+	}
+	if r.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
 	}
 	return nil
 }

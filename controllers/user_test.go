@@ -16,13 +16,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const (
+	FAKE_USER = "user"
+	FAKE_PASS = "pass"
+)
+
 var (
-	token   string
-	data, _ = json.Marshal(map[string]any{
-		"username": "user",
-		"password": "pass",
-	})
-	e = echo.New()
+	token string
 )
 
 func TestMain(m *testing.M) {
@@ -30,14 +30,22 @@ func TestMain(m *testing.M) {
 	db.Init()
 	migration.Init()
 
+	models.RegisterUser(&models.User{Username: FAKE_USER, Password: FAKE_PASS})
+
 	code := m.Run()
 
 	models.DeleteUserByName("user")
+
 	os.Exit(code)
 }
 
 func TestRegister(t *testing.T) {
+	data, _ := json.Marshal(map[string]any{
+		"username": "newuser",
+		"password": "pass",
+	})
 
+	e := echo.New()
 	req, _ := http.NewRequest(http.MethodPost, "/register", bytes.NewBuffer(data))
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
@@ -58,10 +66,18 @@ func TestRegister(t *testing.T) {
 	if err := Register(c); assert.Error(t, err) {
 		assert.Equal(t, echo.ErrConflict, err)
 	}
+
+	models.DeleteUserByName("newuser")
 }
 
 func TestLogin(t *testing.T) {
-	req, _ := http.NewRequest(http.MethodPost, "/login", bytes.NewBuffer(data))
+	data, _ := json.Marshal(map[string]any{
+		"username": FAKE_USER,
+		"password": FAKE_PASS,
+	})
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodPost, "/login", bytes.NewBuffer(data))
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 
@@ -76,7 +92,7 @@ func TestLogin(t *testing.T) {
 
 func TestRefresh(t *testing.T) {
 	e := echo.New()
-	req, _ := http.NewRequest(http.MethodPost, "/refresh", nil)
+	req := httptest.NewRequest(http.MethodPost, "/refresh", nil)
 	rec := httptest.NewRecorder()
 	req.Header.Set("Authorization", "Bearer "+token)
 	c := e.NewContext(req, rec)
