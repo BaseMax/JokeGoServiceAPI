@@ -18,6 +18,9 @@ import (
 var jwtKey []byte
 
 func decodeBody(c echo.Context, i any) error {
+	if c.Request().Body == nil {
+		return echo.ErrBadRequest
+	}
 	if err := json.NewDecoder(c.Request().Body).Decode(i); err != nil {
 		return echo.ErrBadRequest
 	}

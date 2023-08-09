@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	"net/http"
 	"strconv"
 
@@ -10,9 +11,13 @@ import (
 
 func CreateJoke(c echo.Context) error {
 	var j models.JokeRequest
-	if err := decodeBody(c, &j); err != nil {
+	if c.Request().Body == nil {
 		return echo.ErrBadRequest
 	}
+	if err := json.NewDecoder(c.Request().Body).Decode(&j); err != nil {
+		return echo.ErrBadRequest
+	}
+
 	err := models.CreateJoke(&j)
 	if err := dbErrorToHttp(err); err != nil {
 		return err
@@ -21,11 +26,11 @@ func CreateJoke(c echo.Context) error {
 }
 
 func GetJoke(c echo.Context) error {
-	id, err := strToUint(c.Param("joke_id"))
+	id, err := strconv.Atoi(c.Param("joke_id"))
 	if err != nil {
 		return echo.ErrBadRequest
 	}
-	joke, err := models.FetchAJoke(id)
+	joke, err := models.FetchAJoke(uint(id))
 	if err := dbErrorToHttp(err); err != nil {
 		return err
 	}
@@ -49,7 +54,7 @@ func GetAllJokes(c echo.Context) error {
 
 	jokes, total, err := models.FetchAllJokes(limit, page, sort)
 	if err != nil {
-		return err
+		return echo.ErrNotFound
 	}
 	return c.JSON(http.StatusOK, map[string]any{
 		"total": total,
@@ -75,7 +80,7 @@ func GetTopRatedJoke(c echo.Context) error {
 	}
 	jokes, err := models.FetchTopRatedJokes(limit)
 	if err != nil {
-		return err
+		return echo.ErrNotFound
 	}
 
 	return c.JSON(http.StatusOK, map[string]any{
@@ -94,16 +99,16 @@ func GetJokeByAuthor(c echo.Context) error {
 
 func EditJoke(c echo.Context) error {
 	var joke models.JokeRequest
-	id, err := strToUint(c.Param("joke_id"))
+	id, err := strconv.Atoi(c.Param("joke_id"))
 	if err != nil {
 		return echo.ErrBadRequest
 	}
-	if err := decodeBody(c, &joke); err != nil {
+	if err := json.NewDecoder(c.Request().Body).Decode(&joke); err != nil {
 		return echo.ErrBadRequest
 	}
 
-	joke.ID = id
-	err = models.UpdateJoke(id, &joke)
+	joke.ID = uint(id)
+	err = models.UpdateJoke(joke.ID, &joke)
 	if err := dbErrorToHttp(err); err != nil {
 		return err
 	}
@@ -111,12 +116,12 @@ func EditJoke(c echo.Context) error {
 }
 
 func DeleteJoke(c echo.Context) error {
-	id, err := strToUint(c.Param("joke_id"))
+	id, err := strconv.Atoi(c.Param("joke_id"))
 	if err != nil {
 		return echo.ErrBadRequest
 	}
 
-	if err := models.DeleteJokeById(id); err != nil {
+	if err := models.DeleteJokeById(uint(id)); err != nil {
 		return echo.ErrNotFound
 	}
 	return c.NoContent(http.StatusNoContent)
@@ -124,17 +129,17 @@ func DeleteJoke(c echo.Context) error {
 
 func RateJoke(c echo.Context) error {
 	var joke *models.JokeRequest
-	id, err := strToUint(c.Param("joke_id"))
+	id, err := strconv.Atoi(c.Param("joke_id"))
 	if err != nil {
 		return echo.ErrBadRequest
 	}
-	if err := decodeBody(c, &joke); err != nil {
+	if err := json.NewDecoder(c.Request().Body).Decode(&joke); err != nil {
 		return echo.ErrBadRequest
 	}
 
-	joke, err = models.RateJoke(id, joke.Rating)
-	if err := dbErrorToHttp(err); err != nil {
-		return err
+	joke, err = models.RateJoke(uint(id), joke.Rating)
+	if err != nil {
+		return echo.ErrNotFound
 	}
 	return c.JSON(http.StatusOK, joke)
 }

@@ -86,7 +86,10 @@ func FetchAllJokes(limit int, page int, sort string) (*[]JokeRequest, uint, erro
 func FetchRandomJoke() (*JokeRequest, error) {
 	db := db.GetDB()
 	var j Joke
-	db.Order("RAND()").Preload("Author").First(&j)
+	r := db.Order("RAND()").Preload("Author").First(&j)
+	if r.Error != nil || r.RowsAffected == 0 {
+		return nil, r.Error
+	}
 
 	joke := &JokeRequest{ID: j.ID, Content: j.Content,
 		Author: j.Author.Username, Rating: j.Rating}
