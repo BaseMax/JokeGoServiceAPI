@@ -1,82 +1,89 @@
 package controllers
 
 import (
+	"encoding/json"
 	"net/http"
+	"strconv"
+
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/labstack/echo/v4"
 
 	"github.com/BaseMax/JokeGoServiceAPI/models"
-	"github.com/labstack/echo/v4"
 )
 
 func CreateJokeComment(c echo.Context) error {
 	var comment models.CommentRequest
-	if err := decodeBody(c, &comment); err != nil {
+	if err := json.NewDecoder(c.Request().Body).Decode(&comment); err != nil {
 		return echo.ErrBadRequest
 	}
-	id, err := strToUint(c.Param("joke_id"))
+	joke_id, err := strconv.Atoi(c.Param("joke_id"))
 	if err != nil {
 		return echo.ErrBadRequest
 	}
+	bearer := c.Request().Header.Get("Authorization")
+	token, _, _ := new(jwt.Parser).ParseUnverified(bearer[len("Bearer "):], jwt.MapClaims{})
+	claims := token.Claims.(jwt.MapClaims)
+	author, _ := claims.GetIssuer()
 
-	err = models.CreateComment(id, &comment)
-	if err := dbErrorToHttp(err); err != nil {
-		return err
+	comment.Author = author
+	err = models.CreateComment(uint(joke_id), &comment)
+	if err != nil {
+		return echo.ErrNotFound
 	}
 	return c.JSON(http.StatusOK, comment)
 }
 
 func GetJokeComment(c echo.Context) error {
-	id, err := strToUint(c.Param("comment_id"))
+	id, err := strconv.Atoi(c.Param("comment_id"))
 	if err != nil {
 		return echo.ErrBadRequest
 	}
 
-	comment, err := models.FetchCommentById(id)
-	if err := dbErrorToHttp(err); err != nil {
-		return err
+	comment, err := models.FetchCommentById(uint(id))
+	if err != nil {
+		return echo.ErrNotFound
 	}
 
 	return c.JSON(http.StatusOK, comment)
 }
 
 func GetJokeComments(c echo.Context) error {
-	id, err := strToUint(c.Param("joke_id"))
+	id, err := strconv.Atoi(c.Param("joke_id"))
 	if err != nil {
 		return echo.ErrBadRequest
 	}
 
-	comments, err := models.FetchAllComments(id)
-	if err := dbErrorToHttp(err); err != nil {
-		return err
+	comments, err := models.FetchAllComments(uint(id))
+	if err != nil {
+		return echo.ErrNotFound
 	}
 	return c.JSON(http.StatusOK, comments)
 }
 
 func EditJokeComment(c echo.Context) error {
 	var comment models.CommentRequest
-	if err := decodeBody(c, &comment); err != nil {
+	if err := json.NewDecoder(c.Request().Body).Decode(&comment); err != nil {
 		return echo.ErrBadRequest
 	}
-	id, err := strToUint(c.Param("comment_id"))
+	id, err := strconv.Atoi(c.Param("comment_id"))
 	if err != nil {
 		return echo.ErrBadRequest
 	}
 
-	err = models.UpdateComment(id, &comment)
-	if err := dbErrorToHttp(err); err != nil {
-		return err
+	if models.UpdateComment(uint(id), &comment) != nil {
+		return echo.ErrNotFound
 	}
 	return c.JSON(http.StatusOK, comment)
 }
 
 func DeleteJokeComment(c echo.Context) error {
-	id, err := strToUint(c.Param("comment_id"))
+	id, err := strconv.Atoi(c.Param("comment_id"))
 	if err != nil {
 		return echo.ErrBadRequest
 	}
 
-	err = models.DeleteComment(id)
-	if err := dbErrorToHttp(err); err != nil {
-		return err
+	if models.DeleteComment(uint(id)) != nil {
+		return echo.ErrNotFound
 	}
 
 	return c.NoContent(http.StatusNoContent)

@@ -18,9 +18,8 @@ func CreateJoke(c echo.Context) error {
 		return echo.ErrBadRequest
 	}
 
-	err := models.CreateJoke(&j)
-	if err := dbErrorToHttp(err); err != nil {
-		return err
+	if models.CreateJoke(&j) != nil {
+		return echo.ErrNotFound
 	}
 	return c.JSON(http.StatusOK, j)
 }
@@ -31,8 +30,8 @@ func GetJoke(c echo.Context) error {
 		return echo.ErrBadRequest
 	}
 	joke, err := models.FetchAJoke(uint(id))
-	if err := dbErrorToHttp(err); err != nil {
-		return err
+	if err != nil {
+		return echo.ErrNotFound
 	}
 	return c.JSON(http.StatusOK, joke)
 }
@@ -108,9 +107,8 @@ func EditJoke(c echo.Context) error {
 	}
 
 	joke.ID = uint(id)
-	err = models.UpdateJoke(joke.ID, &joke)
-	if err := dbErrorToHttp(err); err != nil {
-		return err
+	if models.UpdateJoke(joke.ID, &joke) != nil {
+		return echo.ErrNotFound
 	}
 	return c.JSON(http.StatusOK, joke)
 }

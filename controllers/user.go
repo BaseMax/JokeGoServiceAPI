@@ -24,9 +24,8 @@ func Register(c echo.Context) error {
 		return echo.ErrBadRequest
 	}
 
-	err := models.RegisterUser(&user)
-	if err := dbErrorToHttp(err); err != nil {
-		return err
+	if models.RegisterUser(&user) != nil {
+		return echo.ErrConflict
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{

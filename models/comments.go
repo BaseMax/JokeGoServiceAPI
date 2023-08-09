@@ -1,8 +1,6 @@
 package models
 
 import (
-	"log"
-
 	"github.com/BaseMax/JokeGoServiceAPI/db"
 	"gorm.io/gorm"
 )
@@ -35,7 +33,6 @@ func CreateComment(joke_id uint, c *CommentRequest) error {
 	comment := Comment{ID: c.ID, Content: c.Content, JokeID: joke_id, AuthorID: user.ID}
 	r = db.Create(&comment)
 	if r.Error != nil {
-		log.Println(r.Error)
 		return r.Error
 	}
 
@@ -47,7 +44,7 @@ func FetchCommentById(id uint) (*CommentRequest, error) {
 	var comment Comment
 	db := db.GetDB()
 
-	r := db.Preload("Author").First(&comment, "id = ?")
+	r := db.Preload("Author").First(&comment, id)
 	if r.Error != nil {
 		return nil, r.Error
 	}
