@@ -1,6 +1,7 @@
 package db
 
 import (
+	"os"
 	"testing"
 
 	"github.com/joho/godotenv"
@@ -9,6 +10,13 @@ import (
 
 func TestInit(t *testing.T) {
 	godotenv.Load("../.env")
+
+	host := os.Getenv("DB_HOSTNAME")
+	os.Setenv("DB_HOSTNAME", "invalidhost")
+	assert.Error(t, Init())
+	os.Setenv("DB_HOSTNAME", host)
+
+	assert.NoError(t, Init())
 	assert.NoError(t, Init())
 }
 

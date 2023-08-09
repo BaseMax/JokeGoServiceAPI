@@ -37,3 +37,7 @@ func TestLoginUser(t *testing.T) {
 
 	d.Delete(&u)
 }
+
+func TestDeleteUserByName(t *testing.T) {
+	assert.NoError(t, DeleteUserByName("user"))
+}

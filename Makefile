@@ -29,4 +29,5 @@ run-local:
 	export DB_HOSTNAME=localhost; go run .
 
 test-local:
-	export DB_HOSTNAME=localhost; go test -v ./...
+	export DB_HOSTNAME=localhost; go test -v ./... -cover -coverprofile=/tmp/cover.out
+	go tool cover -func=/tmp/cover.out

@@ -27,15 +27,7 @@ func Init() error {
 	}
 	db, err = gorm.Open(mysql.Open(dsn), conf)
 	if err != nil {
-		return err
-	}
-
-	sqlDB, _ := db.DB()
-	if err := sqlDB.Ping(); err != nil {
-		return err
-	}
-
-	if err != nil {
+		db = nil
 		return err
 	}
 
