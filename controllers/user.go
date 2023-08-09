@@ -2,15 +2,24 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"os"
+	"time"
 
-	"github.com/BaseMax/JokeGoServiceAPI/models"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
+
+	"github.com/BaseMax/JokeGoServiceAPI/models"
 )
+
+var EXPTIME = jwt.NewNumericDate(time.Now().Add(time.Hour * 24 * 30))
 
 func Register(c echo.Context) error {
 	var user models.User
+	if c.Request().Body == nil {
+		return echo.ErrBadRequest
+	}
 	if err := json.NewDecoder(c.Request().Body).Decode(&user); err != nil {
 		return echo.ErrBadRequest
 	}
@@ -19,14 +28,13 @@ func Register(c echo.Context) error {
 	if err := dbErrorToHttp(err); err != nil {
 		return err
 	}
-	if err != nil {
-		return echo.ErrInternalServerError
-	}
 
-	bearer, err := createToken(user.ID, user.Username)
-	if err != nil {
-		return err
-	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{
+		ID:        fmt.Sprint(user.ID),
+		Issuer:    user.Username,
+		ExpiresAt: EXPTIME,
+	})
+	bearer, _ := token.SignedString([]byte(os.Getenv("JWT_KET")))
 	return c.JSON(http.StatusOK, map[string]string{
 		"bearer": bearer,
 	})
@@ -41,10 +49,12 @@ func Login(c echo.Context) error {
 		return echo.ErrNotFound
 	}
 
-	bearer, err := createToken(user.ID, user.Username)
-	if err != nil {
-		return err
-	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{
+		ID:        fmt.Sprint(user.ID),
+		Issuer:    user.Username,
+		ExpiresAt: EXPTIME,
+	})
+	bearer, _ := token.SignedString([]byte(os.Getenv("JWT_KET")))
 	return c.JSON(http.StatusOK, map[string]string{
 		"bearer": bearer,
 	})
@@ -52,21 +62,18 @@ func Login(c echo.Context) error {
 
 func Refresh(c echo.Context) error {
 	bearer := c.Request().Header.Get("Authorization")
-	bearer = bearer[len("Bearer "):]
+	if bearer == "" {
+		return echo.ErrBadRequest
+	}
+	token, _, _ := new(jwt.Parser).ParseUnverified(bearer[len("Bearer "):], jwt.MapClaims{})
+	claims := token.Claims.(jwt.MapClaims)
 
-	token, _, err := new(jwt.Parser).ParseUnverified(bearer, jwt.MapClaims{})
-	if err != nil {
-		return echo.ErrBadRequest
-	}
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok {
-		return echo.ErrBadRequest
-	}
-	bearer, err = createToken(claims["jti"], claims["iss"].(string))
-	if err != nil {
-		return echo.ErrBadRequest
-	}
-
+	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{
+		ID:        fmt.Sprint(claims["jti"]),
+		Issuer:    fmt.Sprint(claims["iss"]),
+		ExpiresAt: EXPTIME,
+	})
+	bearer, _ = refreshToken.SignedString([]byte(os.Getenv("JWT_KET")))
 	return c.JSON(http.StatusOK, map[string]string{
 		"bearer": bearer,
 	})
