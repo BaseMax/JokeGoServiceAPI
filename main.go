@@ -16,7 +16,7 @@ func main() {
 	if err := db.Init(); err != nil {
 		log.Fatal(err)
 	}
-	err := db.GetDB().AutoMigrate(&models.User{}, &models.Joke{}, &models.Joke{})
+	err := db.GetDB().AutoMigrate(&models.User{}, &models.Joke{}, &models.Comment{})
 	if err != nil {
 		log.Fatal(err)
 	}
