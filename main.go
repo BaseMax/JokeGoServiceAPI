@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/BaseMax/JokeGoServiceAPI/db"
-	"github.com/BaseMax/JokeGoServiceAPI/migration"
+	"github.com/BaseMax/JokeGoServiceAPI/models"
 	"github.com/BaseMax/JokeGoServiceAPI/routes"
 	"github.com/joho/godotenv"
 )
@@ -16,7 +16,8 @@ func main() {
 	if err := db.Init(); err != nil {
 		log.Fatal(err)
 	}
-	if err := migration.Init(); err != nil {
+	err := db.GetDB().AutoMigrate(&models.User{}, &models.Joke{}, &models.Joke{})
+	if err != nil {
 		log.Fatal(err)
 	}
 	r := routes.Init()

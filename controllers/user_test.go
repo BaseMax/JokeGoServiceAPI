@@ -13,7 +13,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/BaseMax/JokeGoServiceAPI/db"
-	"github.com/BaseMax/JokeGoServiceAPI/migration"
 	"github.com/BaseMax/JokeGoServiceAPI/models"
 )
 
@@ -29,7 +28,7 @@ var (
 func TestMain(m *testing.M) {
 	godotenv.Load("../.env")
 	db.Init()
-	migration.Init()
+	db.GetDB().AutoMigrate(&models.User{}, &models.Joke{}, &models.Comment{})
 
 	models.RegisterUser(&models.User{Username: FAKE_USER, Password: FAKE_PASS})
 

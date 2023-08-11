@@ -1,8 +1,9 @@
 package models
 
 import (
-	"github.com/BaseMax/JokeGoServiceAPI/db"
 	"gorm.io/gorm"
+
+	"github.com/BaseMax/JokeGoServiceAPI/db"
 )
 
 type CommentRequest struct {

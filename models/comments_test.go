@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/BaseMax/JokeGoServiceAPI/db"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
+
+	"github.com/BaseMax/JokeGoServiceAPI/db"
 )
 
 func TestCreateComment(t *testing.T) {

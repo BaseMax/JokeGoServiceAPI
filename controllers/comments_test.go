@@ -28,8 +28,7 @@ func TestCreateJokeComment(t *testing.T) {
 	expectedResult := models.CommentRequest{ID: 1, Content: "Comment", Author: FAKE_USER}
 	var actualResult models.CommentRequest
 
-	joke := models.JokeRequest{Content: "Joke content", Author: FAKE_USER}
-	models.CreateJoke(&joke)
+	models.CreateJoke(&models.JokeRequest{Content: "Joke content", Author: FAKE_USER})
 
 	e := echo.New()
 	data, _ := json.Marshal(expectedResult)
@@ -37,7 +36,7 @@ func TestCreateJokeComment(t *testing.T) {
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.SetParamNames("joke_id")
-	c.SetParamValues(fmt.Sprint(joke.ID))
+	c.SetParamValues("1")
 	req.Header.Set("Authorization", "Bearer "+bearer)
 	if assert.NoError(t, CreateJokeComment(c)) {
 		assert.Equal(t, http.StatusOK, rec.Code)
