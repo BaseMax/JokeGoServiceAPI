@@ -3,9 +3,10 @@ package routes
 import (
 	"os"
 
-	"github.com/BaseMax/JokeGoServiceAPI/controllers"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
+
+	"github.com/BaseMax/JokeGoServiceAPI/controllers"
 )
 
 func Init() *echo.Echo {
