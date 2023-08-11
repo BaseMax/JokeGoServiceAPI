@@ -23,21 +23,15 @@ func CreateComment(joke_id uint, c *CommentRequest) error {
 	db := db.GetDB()
 	var user User
 	r := db.Find(&user, "username = ?", c.Author)
-	if r.Error != nil {
-		return r.Error
-	}
 	if r.RowsAffected == 0 {
 		return gorm.ErrRecordNotFound
 	}
 
 	comment := Comment{ID: c.ID, Content: c.Content, JokeID: joke_id, AuthorID: user.ID}
-	r = db.Create(&comment)
-	if r.Error != nil {
-		return r.Error
-	}
+	err := db.Create(&comment).Error
 
 	c.ID = comment.ID
-	return nil
+	return err
 }
 
 func FetchCommentById(id uint) (*CommentRequest, error) {
@@ -45,9 +39,6 @@ func FetchCommentById(id uint) (*CommentRequest, error) {
 	db := db.GetDB()
 
 	r := db.Preload("Author").First(&comment, id)
-	if r.Error != nil {
-		return nil, r.Error
-	}
 	if r.RowsAffected == 0 {
 		return nil, gorm.ErrRecordNotFound
 	}
@@ -62,9 +53,6 @@ func FetchAllComments(joke_id uint) (*[]CommentRequest, error) {
 	db := db.GetDB()
 
 	r := db.Preload("Comments").Preload("Author").First(&joke, joke_id)
-	if r.Error != nil {
-		return nil, r.Error
-	}
 	if r.RowsAffected == 0 {
 		return nil, gorm.ErrRecordNotFound
 	}
@@ -87,22 +75,15 @@ func UpdateComment(id uint, c *CommentRequest) error {
 	}
 
 	err := db.Where(id).Updates(Comment{Content: c.Content}).Error
-	if err != nil {
-		return err
-	}
-
 	c.ID = comment.ID
 	c.Author = comment.Author.Username
-	return nil
+	return err
 }
 
 func DeleteComment(id uint) error {
 	r := db.GetDB().Delete(&Comment{}, id)
-	if r.Error != nil {
-		return r.Error
-	}
 	if r.RowsAffected == 0 {
 		return gorm.ErrRecordNotFound
 	}
-	return nil
+	return r.Error
 }
