@@ -28,10 +28,7 @@ func TestMain(m *testing.M) {
 
 	code := m.Run()
 
-	db := db.GetDB()
-	db.Raw("DELETE FROM users;").Row()
-	db.Raw("ALTER TABLE users AUTO_INCREMENT=1;").Row()
-
+	db.TruncateTable("comments", "jokes", "users")
 	os.Exit(code)
 }
 

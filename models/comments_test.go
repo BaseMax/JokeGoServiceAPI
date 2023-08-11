@@ -53,13 +53,7 @@ func TestDeleteComment(t *testing.T) {
 }
 
 func TestTruncateComments(t *testing.T) {
-	db := db.GetDB()
-
-	db.Raw("DELETE FROM comments;").Row()
-	db.Raw("ALTER TABLE comments AUTO_INCREMENT=1;").Row()
-
-	db.Raw("DELETE FROM jokes;").Row()
-	db.Raw("ALTER TABLE jokes AUTO_INCREMENT=1;").Row()
+	db.TruncateTable("comments", "jokes")
 }
 
 func TestFetchAllCommentsNotFound(t *testing.T) {

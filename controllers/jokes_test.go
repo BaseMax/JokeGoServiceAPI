@@ -381,9 +381,7 @@ func TestDeleteJoke(t *testing.T) {
 }
 
 func TestTruncateJokes(t *testing.T) {
-	db := db.GetDB()
-	db.Raw("DELETE FROM jokes;").Row()
-	db.Raw("ALTER TABLE jokes AUTO_INCREMENT=1;").Row()
+	db.TruncateTable("comments", "jokes", "users")
 }
 
 func TestGetRandomJokeNotFound(t *testing.T) {

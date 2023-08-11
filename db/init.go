@@ -3,6 +3,7 @@ package db
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
@@ -57,6 +58,18 @@ func GetRandFunction() string {
 		return "RANDOM()"
 	}
 	return ""
+}
+
+func TruncateTable(names ...string) {
+	switch os.Getenv("DBMS") {
+	case "mysql":
+		for _, name := range names {
+			db.Raw("DELETE FROM " + name + ";").Row()
+			db.Raw("ALTER TABLE " + name + " AUTO_INCREMENT=1;").Row()
+		}
+	case "postgres":
+		db.Raw("TRUNCATE ONLY " + strings.Join(names, ",") + " RESTART IDENTITY;").Row()
+	}
 }
 
 func GetDB() *gorm.DB {

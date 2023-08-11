@@ -34,8 +34,7 @@ func TestMain(m *testing.M) {
 
 	code := m.Run()
 
-	models.DeleteUserByName("user")
-
+	db.TruncateTable("comments", "jokes", "users")
 	os.Exit(code)
 }
 
@@ -79,14 +78,12 @@ func TestRegister(t *testing.T) {
 	if err := Register(c); assert.Error(t, err) {
 		assert.Equal(t, echo.ErrBadRequest, err)
 	}
-
-	models.DeleteUserByName("newuser")
 }
 
 func TestLogin(t *testing.T) {
 	data, _ := json.Marshal(map[string]any{
-		"username": FAKE_USER,
-		"password": FAKE_PASS,
+		"username": "newuser",
+		"password": "pass",
 	})
 
 	e := echo.New()
@@ -137,4 +134,6 @@ func TestRefresh(t *testing.T) {
 	if err := Refresh(c); assert.Error(t, err) {
 		assert.Equal(t, echo.ErrBadRequest, err)
 	}
+
+	models.DeleteUserByName("newuser")
 }
