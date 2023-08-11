@@ -8,6 +8,8 @@ services:
         condition: service_completed_successfully
     links:
       - db
+    environment:
+      - DBMS=mysql
 
   wait-for-db:
     image: atkrad/wait4x

@@ -22,6 +22,9 @@ test-build: test-down
 test-down:
 	${TEST_COMPOSER} down
 
+test-run-db:
+	${TEST_COMPOSER} up db -d
+
 run-db:
 	docker-compose up db -d
 
