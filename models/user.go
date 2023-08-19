@@ -22,20 +22,13 @@ func hashPassword(password *string) {
 func RegisterUser(u *User) error {
 	hashPassword(&u.Password)
 	db := db.GetDB()
-	err := db.Create(&u).Error
-	if err != nil {
-		return err
-	}
-	return nil
+	return db.Create(&u).Error
 }
 
 func LoginUser(u *User) error {
 	hashPassword(&u.Password)
 	db := db.GetDB()
-	if err := db.Where(u).First(&u).Error; err != nil {
-		return err
-	}
-	return nil
+	return db.Where(u).First(&u).Error
 }
 
 func DeleteUserByName(name string) error {

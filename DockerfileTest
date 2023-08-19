@@ -3,4 +3,4 @@ COPY . /app
 WORKDIR /app
 RUN go mod tidy
 ENTRYPOINT [ "bash" ]
-CMD [ "-c", "go test -v ./..." ]
+CMD [ "-c", "go test -v ./... -cover" ]

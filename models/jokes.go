@@ -1,8 +1,9 @@
 package models
 
 import (
-	"github.com/BaseMax/JokeGoServiceAPI/db"
 	"gorm.io/gorm"
+
+	"github.com/BaseMax/JokeGoServiceAPI/db"
 )
 
 type JokeRequest struct {
@@ -34,24 +35,20 @@ func CreateJoke(j *JokeRequest) error {
 		Rating:   j.Rating,
 		AuthorID: u.ID,
 	}
-	r = db.Create(&joke)
+	err := db.Create(&joke).Error
 
 	j.ID = joke.ID
 	j.Rating = joke.Rating
-	return r.Error
+	return err
 }
 
 func FetchAJoke(id uint) (*JokeRequest, error) {
 	var j Joke
 	r := db.GetDB().Preload("Author").Find(&j, id)
-	if r.Error != nil {
-		return nil, r.Error
-	}
 	if r.RowsAffected == 0 {
 		return nil, gorm.ErrRecordNotFound
 	}
-	joke := &JokeRequest{ID: j.ID, Content: j.Content,
-		Author: j.Author.Username, Rating: j.Rating}
+	joke := &JokeRequest{ID: j.ID, Content: j.Content, Author: j.Author.Username, Rating: j.Rating}
 	return joke, nil
 }
 
@@ -67,11 +64,8 @@ func FetchAllJokes(limit int, page int, sort string) (*[]JokeRequest, uint, erro
 		col = "rating"
 	}
 	r := db.Limit(limit).Offset(((page - 1) * limit)).Order(col + " DESC").Preload("Author").Find(&jokes)
-	if r.Error != nil {
-		return nil, 0, r.Error
-	}
 	if r.RowsAffected == 0 {
-		return nil, 0, gorm.ErrRecordNotFound
+		return nil, uint(count), gorm.ErrRecordNotFound
 	}
 
 	var jokeReqs []JokeRequest
@@ -84,9 +78,11 @@ func FetchAllJokes(limit int, page int, sort string) (*[]JokeRequest, uint, erro
 }
 
 func FetchRandomJoke() (*JokeRequest, error) {
-	db := db.GetDB()
 	var j Joke
-	db.Order("RAND()").Preload("Author").First(&j)
+	r := db.GetDB().Order(db.GetRandFunction()).Preload("Author").First(&j)
+	if r.Error != nil || r.RowsAffected == 0 {
+		return nil, r.Error
+	}
 
 	joke := &JokeRequest{ID: j.ID, Content: j.Content,
 		Author: j.Author.Username, Rating: j.Rating}
@@ -125,9 +121,6 @@ func UpdateJoke(id uint, j *JokeRequest) error {
 	}
 
 	r = db.Where(id).Updates(Joke{AuthorID: user.ID, Content: j.Content, Rating: j.Rating})
-	if r.Error != nil {
-		return r.Error
-	}
 	if r.RowsAffected == 0 {
 		return gorm.ErrRecordNotFound
 	}
@@ -136,9 +129,6 @@ func UpdateJoke(id uint, j *JokeRequest) error {
 
 func DeleteJokeById(id uint) error {
 	r := db.GetDB().Delete(&Joke{}, id)
-	if r.Error != nil {
-		return r.Error
-	}
 	if r.RowsAffected == 0 {
 		return gorm.ErrRecordNotFound
 	}
@@ -149,19 +139,13 @@ func RateJoke(id uint, rating uint) (*JokeRequest, error) {
 	db := db.GetDB()
 
 	r := db.Preload("Author").First(&joke, id)
-	if r.Error != nil {
-		return nil, r.Error
-	}
 	if r.RowsAffected == 0 {
 		return nil, gorm.ErrRecordNotFound
 	}
 	joke.Rating = rating
-	r = db.Save(&joke)
-	if r.Error != nil {
-		return nil, r.Error
-	}
+	err := db.Save(&joke).Error
 
 	jokeReq := &JokeRequest{ID: id, Content: joke.Content,
 		Author: joke.Author.Username, Rating: rating}
-	return jokeReq, nil
+	return jokeReq, err
 }

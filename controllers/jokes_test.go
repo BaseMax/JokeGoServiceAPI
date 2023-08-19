@@ -8,10 +8,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/BaseMax/JokeGoServiceAPI/db"
-	"github.com/BaseMax/JokeGoServiceAPI/models"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/BaseMax/JokeGoServiceAPI/db"
+	"github.com/BaseMax/JokeGoServiceAPI/models"
 )
 
 func TestCreateJoke(t *testing.T) {
@@ -45,7 +46,20 @@ func TestCreateJoke(t *testing.T) {
 	rec = httptest.NewRecorder()
 
 	if err := CreateJoke(e.NewContext(req, rec)); assert.Error(t, err) {
-		assert.Equal(t, err, echo.ErrNotFound)
+		assert.Equal(t, echo.ErrNotFound, err)
+	}
+
+	data, _ = json.Marshal(map[string]any{"content": 1, "author": nil})
+	req, _ = http.NewRequest(http.MethodPost, "/jokes", bytes.NewBuffer(data))
+	rec = httptest.NewRecorder()
+	if err := CreateJoke(e.NewContext(req, rec)); assert.Error(t, err) {
+		assert.Equal(t, echo.ErrBadRequest, err)
+	}
+
+	req, _ = http.NewRequest(http.MethodPost, "/jokes", nil)
+	rec = httptest.NewRecorder()
+	if err := CreateJoke(e.NewContext(req, rec)); assert.Error(t, err) {
+		assert.Equal(t, echo.ErrBadRequest, err)
 	}
 }
 
@@ -75,6 +89,14 @@ func TestGetJoke(t *testing.T) {
 	req = httptest.NewRequest(http.MethodGet, "/jokes/100", nil)
 	rec = httptest.NewRecorder()
 	c = e.NewContext(req, rec)
+
+	if err := GetJoke(c); assert.Error(t, err) {
+		assert.Equal(t, echo.ErrBadRequest, err)
+	}
+
+	req = httptest.NewRequest(http.MethodGet, "/jokes/100", nil)
+	rec = httptest.NewRecorder()
+	c = e.NewContext(req, rec)
 	c.SetParamNames("joke_id")
 	c.SetParamValues("100")
 
@@ -87,6 +109,15 @@ func TestGetAllJokes(t *testing.T) {
 	limit := 26
 	page := 6
 	total := 200
+	target := fmt.Sprint("/jokes?limit=", limit, "&page=", page, "&sort=latest")
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodGet, target, nil)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+	if err := GetAllJokes(c); assert.Error(t, err) {
+		assert.Equal(t, err, echo.ErrNotFound)
+	}
 
 	var jokes []any
 	for i := 2; i <= total; i++ {
@@ -116,12 +147,9 @@ func TestGetAllJokes(t *testing.T) {
 	}
 	expecteResult["jokes"] = jokes
 
-	e := echo.New()
-	target := fmt.Sprint("/jokes?limit=", limit, "&page=", page, "&sort=latest")
-	req := httptest.NewRequest(http.MethodGet, target, nil)
-	rec := httptest.NewRecorder()
-	c := e.NewContext(req, rec)
-
+	req = httptest.NewRequest(http.MethodGet, target, nil)
+	rec = httptest.NewRecorder()
+	c = e.NewContext(req, rec)
 	if assert.NoError(t, GetAllJokes(c)) {
 		assert.Equal(t, http.StatusOK, rec.Code)
 
@@ -136,7 +164,7 @@ func TestGetRandomJoke(t *testing.T) {
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 
-	if err := GetRandomJoke(c); assert.NoError(t, err) {
+	if assert.NoError(t, GetRandomJoke(c)) {
 		assert.Equal(t, http.StatusOK, rec.Code)
 
 		var res map[string]any
@@ -181,7 +209,7 @@ func TestRateJokes(t *testing.T) {
 	}
 
 	target := fmt.Sprint("/jokes/top-rated?limit=", limit)
-	req := httptest.NewRequest(http.MethodPost, target, nil)
+	req := httptest.NewRequest(http.MethodGet, target, nil)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 
@@ -190,6 +218,34 @@ func TestRateJokes(t *testing.T) {
 
 		json.NewDecoder(rec.Body).Decode(&actualResult)
 		assert.Equal(t, expectedResult, actualResult)
+	}
+
+	data, _ := json.Marshal(map[string]any{"rating": 10})
+	req = httptest.NewRequest(http.MethodPost, "/jokes/badid/rating", bytes.NewBuffer(data))
+	rec = httptest.NewRecorder()
+	c = e.NewContext(req, rec)
+	c.SetParamNames("joke_id")
+	c.SetParamValues("badid")
+	if err := RateJoke(c); assert.Error(t, err) {
+		assert.Equal(t, echo.ErrBadRequest, err)
+	}
+
+	req = httptest.NewRequest(http.MethodPost, "/jokes/1/rating", nil)
+	rec = httptest.NewRecorder()
+	c = e.NewContext(req, rec)
+	c.SetParamNames("joke_id")
+	c.SetParamValues("1")
+	if err := RateJoke(c); assert.Error(t, err) {
+		assert.Equal(t, echo.ErrBadRequest, err)
+	}
+
+	req = httptest.NewRequest(http.MethodPost, "/jokes/1500/rating", bytes.NewBuffer(data))
+	rec = httptest.NewRecorder()
+	c = e.NewContext(req, rec)
+	c.SetParamNames("joke_id")
+	c.SetParamValues("1500")
+	if err := RateJoke(c); assert.Error(t, err) {
+		assert.Equal(t, echo.ErrNotFound, err)
 	}
 }
 
@@ -253,7 +309,6 @@ func TestEditJoke(t *testing.T) {
 	c := e.NewContext(req, rec)
 	c.SetParamNames("joke_id")
 	c.SetParamValues("1")
-
 	if assert.NoError(t, EditJoke(c)) {
 		assert.Equal(t, http.StatusOK, rec.Code)
 
@@ -261,12 +316,29 @@ func TestEditJoke(t *testing.T) {
 		assert.Equal(t, expectedResult, actualResult)
 	}
 
+	req = httptest.NewRequest(http.MethodPut, "/jokes/badid", bytes.NewBuffer(data))
+	rec = httptest.NewRecorder()
+	c = e.NewContext(req, rec)
+	c.SetParamNames("joke_id")
+	c.SetParamValues("badid")
+	if err := EditJoke(c); assert.Error(t, err) {
+		assert.Equal(t, echo.ErrBadRequest, err)
+	}
+
+	req = httptest.NewRequest(http.MethodPut, "/jokes/1500", nil)
+	rec = httptest.NewRecorder()
+	c = e.NewContext(req, rec)
+	c.SetParamNames("joke_id")
+	c.SetParamValues("1500")
+	if err := EditJoke(c); assert.Error(t, err) {
+		assert.Equal(t, echo.ErrBadRequest, err)
+	}
+
 	req = httptest.NewRequest(http.MethodPut, "/jokes/15000", bytes.NewBuffer(data))
 	rec = httptest.NewRecorder()
 	c = e.NewContext(req, rec)
 	c.SetParamNames("joke_id")
 	c.SetParamValues("15000")
-
 	if err := EditJoke(c); assert.Error(t, err) {
 		assert.Equal(t, echo.ErrNotFound, err)
 	}
@@ -288,10 +360,61 @@ func TestDeleteJoke(t *testing.T) {
 		_, err := models.FetchAJoke(1)
 		assert.Error(t, err)
 	}
+
+	req = httptest.NewRequest(http.MethodDelete, "/jokes/badid", nil)
+	rec = httptest.NewRecorder()
+	c = e.NewContext(req, rec)
+	c.SetParamNames("joke_id")
+	c.SetParamValues("badid")
+	if err := DeleteJoke(c); assert.Error(t, err) {
+		assert.Equal(t, echo.ErrBadRequest, err)
+	}
+
+	req = httptest.NewRequest(http.MethodDelete, "/jokes/1500", nil)
+	rec = httptest.NewRecorder()
+	c = e.NewContext(req, rec)
+	c.SetParamNames("joke_id")
+	c.SetParamValues("1500")
+	if err := DeleteJoke(c); assert.Error(t, err) {
+		assert.Equal(t, echo.ErrNotFound, err)
+	}
 }
 
 func TestTruncateJokes(t *testing.T) {
-	db := db.GetDB()
-	db.Raw("DELETE FROM jokes;").Row()
-	db.Raw("ALTER TABLE jokes AUTO_INCREMENT=1;").Row()
+	db.TruncateTable("comments", "jokes", "users")
+}
+
+func TestGetRandomJokeNotFound(t *testing.T) {
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodGet, "/jokes/random", nil)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	if err := GetRandomJoke(c); assert.Error(t, err) {
+		assert.Equal(t, echo.ErrNotFound, err)
+	}
+}
+
+func TestRateJokesNotFount(t *testing.T) {
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodGet, "/jokes/top-rated?limit=10", nil)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	if err := GetTopRatedJoke(c); assert.Error(t, err) {
+		assert.Equal(t, echo.ErrNotFound, err)
+	}
+}
+
+func TestGetJokeByAuthorNoyFound(t *testing.T) {
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodGet, "/jokes/authors/noauthor", nil)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+	c.SetParamNames("author_name")
+	c.SetParamValues("noauthor")
+
+	if err := GetJokeByAuthor(c); assert.Error(t, err) {
+		assert.Equal(t, echo.ErrNotFound, err)
+	}
 }

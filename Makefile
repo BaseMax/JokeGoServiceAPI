@@ -22,6 +22,9 @@ test-build: test-down
 test-down:
 	${TEST_COMPOSER} down
 
+test-run-db:
+	${TEST_COMPOSER} up db -d
+
 run-db:
 	docker-compose up db -d
 
@@ -29,4 +32,5 @@ run-local:
 	export DB_HOSTNAME=localhost; go run .
 
 test-local:
-	export DB_HOSTNAME=localhost; go test -v ./...
+	export DB_HOSTNAME=localhost; go test -v ./... -cover -coverprofile=/tmp/cover.out
+	go tool cover -func=/tmp/cover.out
